@@ -1,31 +1,36 @@
-'use client'; 
+'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch('/api/login/route.js', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      // Handle success (redirect the user based on their role)
-      window.location.href = data.redirectUrl; // Or use a Next.js `useRouter` for navigation
-    } else {
-      // Handle error message
-      setErrorMessage(data.message || 'Login failed');
+      if (response.ok) {
+        router.push(data.redirectUrl); // Redirect based on role
+      } else {
+        setErrorMessage(data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage('Something went wrong.');
     }
   };
 
